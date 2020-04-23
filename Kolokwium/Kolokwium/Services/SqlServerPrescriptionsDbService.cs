@@ -1,4 +1,5 @@
-﻿using Kolokwium.Models;
+﻿using Kolokwium.DTOs.Responses;
+using Kolokwium.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -59,5 +60,70 @@ namespace Kolokwium.Services
             }
             return response;
         }
-    }
+
+
+
+     
+        public AddPrescriptionResponse AddPrescription(AddPrescriptionRequest request)
+        {
+
+            AddPrescriptionResponse response;
+
+            using (var con = new SqlConnection(ConString))
+            using (var com = new SqlCommand())
+            {
+                com.Connection = con;
+                con.Open();
+
+                var tran = con.BeginTransaction();
+                com.Transaction = tran;
+                int idPrescription = 0;
+
+                try
+                {
+
+                    if (DateTime.Compare(request.Date, request.DueDate) > 0)
+                    {
+                        tran.Rollback();
+                        return BadRequest("Data waznosci starsza niz data wystawienia");
+                    }
+
+                    com.CommandText = "INSERT INTO Prescription(idPrescription, Date, DueDate, IdPatient, IdDoctor)  OUTPUT INSERTED.idprescription VALUES((select(select max(idEnrollment) from Enrollment) + 1),@Date, @DueDate, @IdPatient, @IdDoctor) ";
+                    com.Parameters.AddWithValue("Date", request.Date);
+                    com.Parameters.AddWithValue("DueDate", request.DueDate);
+                    com.Parameters.AddWithValue("IdDoctor", request.IdDoctor);
+                    com.Parameters.AddWithValue("IdPatient", request.IdPatient);
+                    var reader = com.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        idPrescription = (int)reader["idprescritpion"];
+                    }
+                    reader.Close();
+
+                    response = new AddPrescriptionResponse()
+                    {
+                        Date = request.Date,
+                        DueDate = request.DueDate,
+                        IdDoctor = request.IdDoctor,
+                        IdPatient = request.IdPatient,
+                        IdPrescription = idPrescription
+                    };
+
+                    tran.Commit();
+
+
+                }
+                catch (SqlException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    tran.Rollback();
+                    throw new ArgumentException(ex.Message);
+                }
+
+                return Ok(response);
+
+
+            }
+        }
 }

@@ -11,11 +11,14 @@ using System.Threading.Tasks;
 
 namespace Kolokwium.Controllers
 {
+
+   
     [Route("api/prescriptions")]
     [ApiController]
     public class PrescriptionsController : ControllerBase
     {
-      
+        private const string ConString = "Data Source=db-mssql;Initial Catalog=s18446;Integrated Security=True";
+
         /*      private readonly IAnimalsDbService _dbService;
 
               public AnimalsController(IAnimalsDbService dbService)
