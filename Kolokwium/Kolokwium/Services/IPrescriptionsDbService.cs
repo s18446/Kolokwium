@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Kolokwium.Services
 {
-    interface IPrescriptionsDbService
+    public interface IPrescriptionsDbService
     {
         public GetPrescriptionResponse GetPrescription(string prescription);
 

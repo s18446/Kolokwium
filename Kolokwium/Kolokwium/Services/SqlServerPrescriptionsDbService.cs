@@ -1,4 +1,5 @@
-﻿using Kolokwium.DTOs.Responses;
+﻿using Kolokwium.DTOs.Requests;
+using Kolokwium.DTOs.Responses;
 using Kolokwium.Models;
 using System;
 using System.Collections.Generic;
@@ -85,7 +86,7 @@ namespace Kolokwium.Services
                     if (DateTime.Compare(request.Date, request.DueDate) > 0)
                     {
                         tran.Rollback();
-                        return BadRequest("Data waznosci starsza niz data wystawienia");
+                        throw new ArgumentException("Brak takiej recepty");
                     }
 
                     com.CommandText = "INSERT INTO Prescription(idPrescription, Date, DueDate, IdPatient, IdDoctor)  OUTPUT INSERTED.idprescription VALUES((select(select max(idEnrollment) from Enrollment) + 1),@Date, @DueDate, @IdPatient, @IdDoctor) ";
@@ -121,7 +122,7 @@ namespace Kolokwium.Services
                     throw new ArgumentException(ex.Message);
                 }
 
-                return Ok(response);
+                return response;
 
 
             }
